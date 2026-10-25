@@ -38,32 +38,40 @@ def requires_credit_check(total: float) -> bool:
     """Determines if there needs to be a credit check."""
     return total >= CREDIT_CHECK_MAX
 
-
 def gets_welcome_package(nights: int, total: float) -> bool:
     """Calculates if you get the welcome package."""
     return nights > WELCOME_PACKAGE_NIGHTS and total >= WELCOME_PACKAGE_LIMIT
 
 def total_reserved(stays: list) -> float:
-    """Calculates combined total of stay."""
-    total = 0.0
+    """Calculates combined total of stays."""
+    total = INITIAL_TOTAL
     for stay in stays:
-        total += calculate_stay_total(stay['nightly_rate'], stay['nights'], stay['corprate'])
-        return total
+        total += calculate_stay_total(
+            stay["nightly_rate"],
+            stay["nights"],
+            stay["corporate"],
+        )
+    return total
 
 def largest_stay(stays: list) -> str:
-    """Gives the guest name for the largest total."""
+    """Return the guest name for the largest total."""
     largest_guest = ""
-    largest_total = 0.0
+    largest_total = INITIAL_TOTAL
     first_stay = True
-    stay_total = calculate_stay_total(stay['nightly_rate'], stay['nights'], stay['corprate'])
-    if stay_total or first_stay > largest_total:
-        largest_guest = stay["guest"]
-        largest_total = stay_total
-        first_stay = False
+
+    for stay in stays:
+        stay_total = calculate_stay_total(
+            stay['nightly_rate'], stay['nights'], stay['corporate']
+        )
+        if first_stay or stay_total > largest_total:
+            largest_guest = stay["guest"]
+            largest_total = stay_total
+            first_stay = False
+    return largest_guest
 
 def format_stay_line(guest: str, total: float, credit_check: bool, welcome_package: bool) -> str:
     """Format one stay as a report line."""
     credit_status = "yes" if credit_check else "no"
     package_status = "yes" if welcome_package else "no"
     return (f"{guest}: ${total:.2f}| credit check: {credit_status}"
-            f"| welcome package: {package_staus}")
+            f"| welcome package: {package_status}")
